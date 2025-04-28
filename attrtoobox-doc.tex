@@ -1,0 +1,72 @@
+%! Author = Jander Moreira (moreira.jander@gmail.com)
+%! Date = 27/04/2025
+
+\documentclass[a4paper, 11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+
+\usepackage[presets]{packdoc}
+
+\title{
+    The \PackageName{attrtoolbox} package\\
+    \small V.\ATVersion\\
+    \normalsize\url{https://github.com/jandermoreira/attrtoolbox}
+}
+\author{Jander Moreira\\\small\texttt{moreira.jander@gmail.com}}
+\date{2025/04/27}
+
+\usepackage{attrtoolbox}
+
+\begin{document}
+\maketitle
+\PDPrintChanges
+
+\PDNewVersion{0.1}{2025/04/27}
+\PDAddChange{0.1}{
+    description = Initial version.,
+    no box, no page,
+}
+
+\section{Introduction}
+This is a general package to handle keys and values in an easy way. One may think this as declaring variables in a programming language.
+
+\section{Usage}
+This package can be used by loading it in the preamble.
+
+\begin{Macrodef}{usepackage}{\OArg{options}\PArg{attrtoolbox}}{}
+\end{Macrodef}
+
+This is the only available package option.
+
+\begin{Optiondef}{readonly}{\texttt{true} | \texttt{false}}{Initially: \texttt{false}}
+    When set to \texttt{true} any attempt to change the value of an attribute will result in error. Otherwise the value can be changed freely.
+\end{Optiondef}
+
+\begin{PDListing}
+    \usepackage[readonly]{attrtoolbox}
+\end{PDListing}
+
+\section{Commands}
+
+\subsection{Key-value pairs}
+
+\begin{Macrodef}{ATSetAttribute}{\MArg{class}\MArg{attribute}\MArg{value}}{}
+    This sets an attribute named \Argument{attribute} in a class \Argument{class} to \Argument{value}.
+\end{Macrodef}
+
+\begin{Macrodef}{ATValue}{\MArg{class}\MArg{attribute}}{}
+    This expands the value of the attribute \Argument{attribute} in class \Argument{class}.
+\end{Macrodef}
+
+\begin{PDExample}
+    \ATSetAttribute{person}{name}{Jhon}
+    Hi, \ATValue{person}{name}!
+
+    \ATSetAttribute{person}{name}{Ann}
+    Hi, \ATValue{person}{name}!
+\end{PDExample}
+
+\subsection{Lists}
+
+\end{document}

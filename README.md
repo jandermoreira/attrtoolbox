@@ -1,2 +1,2 @@
 # attrtoolbox
-Latex package to manage and use attributes
+$\LaTeX$ package to manage and use attributes.
