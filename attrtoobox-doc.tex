@@ -28,14 +28,16 @@
     no box, no page,
 }
 
+
 \section{Introduction}
 This is a general package to handle keys and values in an easy way. One may think this as declaring variables in a programming language.
+
 
 \section{Usage}
 This package can be used by loading it in the preamble.
 
-\begin{Macrodef}{usepackage}{\OArg{options}\PArg{attrtoolbox}}{}
-\end{Macrodef}
+\begin{Macro*}{usepackage}{\OArg{options}\PArg{attrtoolbox}}{}
+\end{Macro*}
 
 This is the only available package option.
 
@@ -47,26 +49,76 @@ This is the only available package option.
     \usepackage[readonly]{attrtoolbox}
 \end{PDListing}
 
+
 \section{Commands}
 
 \subsection{Key-value pairs}
 
-\begin{Macrodef}{ATSetAttribute}{\MArg{class}\MArg{attribute}\MArg{value}}{}
+\begin{Macrodef}{ATAttributeSetValue}{\MArg{class}\MArg{attribute}\MArg{value}}{}
     This sets an attribute named \Argument{attribute} in a class \Argument{class} to \Argument{value}.
 \end{Macrodef}
 
-\begin{Macrodef}{ATValue}{\MArg{class}\MArg{attribute}}{}
-    This expands the value of the attribute \Argument{attribute} in class \Argument{class}.
+\begin{Macrodef}{ATAttributeGetValue}{\MArg{class}\MArg{attribute}}{}
+    This expands the value of the attribute \Argument{attribute} in class \Argument{class}. Both \Argument{class} and \Argument{attribute} can be empty.
 \end{Macrodef}
 
 \begin{PDExample}
-    \ATSetAttribute{person}{name}{Jhon}
-    Hi, \ATValue{person}{name}!
+    \ATAttributeSetValue{}{}{Hi}
 
-    \ATSetAttribute{person}{name}{Ann}
-    Hi, \ATValue{person}{name}!
+    \ATAttributeSetValue{person}{name}{Ann}
+    \ATAttributeGetValue{}{}, \ATAttributeGetValue{person}{name}!
+
+    \ATAttributeSetValue{person}{name}{Jhon}
+    \ATAttributeGetValue{}{}, \ATAttributeGetValue{person}{name}!
+
+
+\end{PDExample}
+
+
+\begin{Macrodef}{ATAttributeSetValues}{\MArg{class}\MArg{list-of-attribute}}{}
+    This macro is a shorthand to set several attributes in a \Argument{class}. The \Argument{list-of-attributes} is an \mbox{\texttt{attribute~=~value}} comma-separated list.
+\end{Macrodef}
+
+\begin{PDExample}
+    \ATAttributeSetValues{person 1}{
+        name = Albert,
+        surname = Smith,
+        age = 34,
+    }
 \end{PDExample}
 
 \subsection{Lists}
+
+\begin{Macrodef}{ATListCreate}{\MArg{name}}{}
+    New empty list
+\end{Macrodef}
+
+\begin{Macrodef}{ATListAppendItems}{\MArg{name}\MArg{list-of-items}}{}
+    Add items to list
+\end{Macrodef}
+
+\begin{PDExample}
+    \ATListCreate{people}
+    \ATListAppendItems{people}{Jane, Sean, Sophie}
+    \ATListAppendItems{people}{Margareth, Jack}
+    \begin{itemize}
+        \ATListIterate{people}{\name}{\item \name}
+    \end{itemize}
+\end{PDExample}
+
+\begin{Macrodef}{ATListAppendItemsFrom}{\MArg{name}\MArg{macro}}{}
+    Get items from macro and add them to list
+\end{Macrodef}
+
+\begin{PDExample}
+    \ATListCreate{cities}
+    \ATListAppendItems{cities}{Sao Carlos}
+    \def\MyCities{Paris, London, Rio de Janeiro}
+    \ATListAppendItemsFrom{cities}{\MyCities}
+    List: \ATListIterate{cities}{\city}{\fbox{\city\strut}}
+\end{PDExample}
+
+
+\printindex
 
 \end{document}

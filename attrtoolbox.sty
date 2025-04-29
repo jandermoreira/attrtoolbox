@@ -24,7 +24,7 @@
 %
 
 
-% ATSetAttribute: sets a named attribute to a class
+% ATAttributeSetValue: sets a named attribute to a class
 % #1: class name
 % #2: attribute name
 % #3: value
@@ -45,25 +45,61 @@
         \tl_set:cn { g_at_ #1 _ #2 _tl } { #3 }
     }
 }
-\NewDocumentCommand{\ATSetAttribute}{ m m > { \TrimSpaces } m }{
+\NewDocumentCommand{\ATAttributeSetValue}{ m m > { \TrimSpaces } m }{
     \at_set_attribute:nnn { #1 } { #2 } { #3 }
 }
 
-% ATValue: expands an attribute
+% ATAttributeGetValue: expands an attribute
 % #1: class name
 % #2: attribute name
-\NewDocumentCommand{\ATValue}{ m m }{
+\NewDocumentCommand{\ATAttributeGetValue}{ m m }{
     \tl_use:c { g_at_ #1 _ #2 _tl }
 }
 
-% ATValue: expands an attribute
+% ATAttributeGetValue: expands an attribute
 % #1: class name
 % #2: list of attribute/value pairs
-\NewDocumentCommand{\ATSetAttributes}{ m > { \TrimSpaces } m }{
-    % todo: processamento de lista de atributos
+\NewDocumentCommand{\ATAttributeSetValues}{ m > { \TrimSpaces } m }{
+% todo: processamento de lista de atributos
 }
 
-% ATSetList
-\NewDocumentCommand{\ATSetList}{ m m m }{}
+% ATListCreate: creates a list
+% #1: list name
+\NewDocumentCommand{\ATListCreate}{ m }{
+    \seq_clear_new:c { g_at_list_ #1 _seq }
+}
+
+% ATListAppendItems: adds a new item to the end of the list
+% #1: list name
+% #2: comma-separated list of items
+\cs_new:Npn \at_list_append_items:nn #1#2 {
+    \seq_clear_new:N \l_at_list_of_items_seq
+    \seq_set_split:Nnn \l_at_list_of_items_seq { , } { #2 }
+    \seq_map_inline:Nn \l_at_list_of_items_seq {
+        \seq_put_right:cn { g_at_list_ #1 _seq } { ##1 }
+    }
+}
+\NewDocumentCommand{\ATListAppendItems}{ m > { \TrimSpaces } m }{
+    \at_list_append_items:nn { #1 } { #2 }
+}
+
+
+\NewDocumentCommand{\ATListAppendItemsFrom}{ m m }{
+    \exp_args:Nno \at_list_append_items:nn { #1 } { #2 }
+}
+
+% ATListIterate: loop through the items of a list
+% #1: list name
+% #2: macro to hold the item at each loop
+% #3: commands to execute for each item
+\cs_new:Npn \at_list_iterate:nnn #1#2#3 {
+    \group_begin:
+    \seq_map_variable:cNn { g_at_list_ #1 _seq } #2 { #3 }
+    \group_end:
+}
+\NewDocumentCommand{\ATListIterate}{ m m +m }{
+    \at_list_iterate:nnn { #1 } { #2 } { #3 }
+}
+
 
 \ExplSyntaxOff
