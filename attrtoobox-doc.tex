@@ -4,13 +4,14 @@
 \documentclass[a4paper, 11pt]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[brazilian]{babel}
 
 \usepackage[presets]{packdoc}
+\PDSetElement{Macro}{no group index, index remark = {}}
+\PDSetElement{Option}{no group index, index remark = {}}
 
 \title{
     The \PackageName{attrtoolbox} package\\
-    \small V.\ATVersion\\
+    \small \textcolor{red}{To be} V.\ATVersion\\
     \normalsize\url{https://github.com/jandermoreira/attrtoolbox}
 }
 \author{Jander Moreira\\\small\texttt{moreira.jander@gmail.com}}
@@ -20,6 +21,7 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
 \PDPrintChanges
 
 \PDNewVersion{0.1}{2025/04/27}
@@ -45,47 +47,102 @@ This is the only available package option.
     When set to \texttt{true} any attempt to change the value of an attribute will result in error. Otherwise the value can be changed freely.
 \end{Optiondef}
 
+%! parser = off
 \begin{PDListing}
     \usepackage[readonly]{attrtoolbox}
 \end{PDListing}
+%! parser = on
 
 
 \section{Commands}
 
-\subsection{Key-value pairs}
+\subsection{Attributes}
 
-\begin{Macrodef}{ATAttributeSetValue}{\MArg{class}\MArg{attribute}\MArg{value}}{}
-    This sets an attribute named \Argument{attribute} in a class \Argument{class} to \Argument{value}.
+\begin{Macrodef}{ATAttributeSet}{\OArg{class}\MArg{attribute}\MArg{value}}{}
+    This sets an attribute \Argument{attribute} to \Argument{value}. The \Argument{class} is optional.
+
+    See \MacroRef{ATClassSet}.
 \end{Macrodef}
 
-\begin{Macrodef}{ATAttributeGetValue}{\MArg{class}\MArg{attribute}}{}
-    This expands the value of the attribute \Argument{attribute} in class \Argument{class}. Both \Argument{class} and \Argument{attribute} can be empty.
+\begin{Macrodef}{ATAttributeSetFrom}{\OArg{class}\MArg{attribute}\MArg{macro}}{}
+    This sets an attribute \Argument{attribute} to the contents \Argument{macro} (one expansion). The \Argument{class} is optional.
+
+    See \MacroRef{ATClassSet}.
+\end{Macrodef}
+
+\begin{Macrodef}{ATAttributeGet}{\OArg{class}\MArg{attribute}}{}
+    This expands the value of the attribute \Argument{attribute} in class \Argument{class}.
 \end{Macrodef}
 
 \begin{PDExample}
-    \ATAttributeSetValue{}{}{Hi}
+    \ATAttributeSet{name}{Ann}
+    Hi, \ATAttributeGet{name}!
 
-    \ATAttributeSetValue{person}{name}{Ann}
-    \ATAttributeGetValue{}{}, \ATAttributeGetValue{person}{name}!
-
-    \ATAttributeSetValue{person}{name}{Jhon}
-    \ATAttributeGetValue{}{}, \ATAttributeGetValue{person}{name}!
-
-
+    \ATAttributeSet{name}{Jhon}  % new content
+    Hi, \ATAttributeGet{name}!
 \end{PDExample}
 
-
-\begin{Macrodef}{ATAttributeSetValues}{\MArg{class}\MArg{list-of-attribute}}{}
-    This macro is a shorthand to set several attributes in a \Argument{class}. The \Argument{list-of-attributes} is an \mbox{\texttt{attribute~=~value}} comma-separated list.
-\end{Macrodef}
+Attributes can be used with classes. When \MacroRef{ATAttributeGet} is used specifying a class name, it is equivalent to \MacroRef{ATClassGet}. All the same, a class attribute can be set with \MacroRef{ATAttributeGet}.
 
 \begin{PDExample}
-    \ATAttributeSetValues{person 1}{
-        name = Albert,
-        surname = Smith,
-        age = 34,
+    \ATClassSet{computer}{
+        processor = Intel,
+        ram = 8GiB,
+        hd = 1TB,
     }
+    Processor: \ATAttributeGet[computer]{processor}\par
+    Main memory (current): \ATAttributeGet[computer]{ram}\par
+    \ATAttributeSet[computer]{ram}{16GiB}
+    Main memory (future upgrade): \ATClassGet{computer}{ram}\par
+    Storage: \ATAttributeGet[computer]{hd}\par
 \end{PDExample}
+
+\begin{Macrodef}{ATAttributeIfExist}{\OArg{class}\MArg{attribute}\MArg{code-if-true}\MArg{code-if-false}}{}
+    Executes \Argument{code-if-true} if the \Argument{attribute} exists, otherwise execute \Argument{code-if-false}.
+\end{Macrodef}
+
+\begin{PDExample}
+    \ATClassSet{someone}{
+        forname = Jhon,
+        surname = Doe,
+    }
+    Name: \ATClassGet{someone}{forname}\ATAttributeIfExist [someone]{middlename}{~\ATClassGet{someone}{middlename}}{} \ATClassGet{someone}{surname}.
+
+    \ATClassSet{someone}{middlename = K.}
+    Name: \ATClassGet{someone}{forname}\ATAttributeIfExist [someone]{middlename}{~\ATClassGet{someone}{middlename}}{} \ATClassGet{someone}{surname}.
+\end{PDExample}
+
+\begin{PDExample}
+    \ATAttributeSet{title}{Mr.}
+    Dear \ATAttributeIfEqual{title}{Mr.}{Sir}{Madam}, \ldots
+\end{PDExample}
+
+\subsection{Classes}
+A class is a collection of attributes and their values.
+
+\begin{Macrodef}{ATClassSet}{\MArg{class}\MArg{list-of-attributes}}{}
+    This macro is a shorthand to set several attributes in a \Argument{class}. The \Argument{list-of-attributes} is an \mbox{\texttt{attribute~=~value}} comma-separated list.
+
+    This command replaces a sequecence of \MacroRef{ATAttributeSet} calls for a single \Argument{class}.
+\end{Macrodef}
+
+\begin{Macrodef}{ATClassGet}{\MArg{class}\MArg{attribute}}{}
+    This macro expands the value of \Argument{attribute} from \Argument{class}.
+
+    Note that \PDInline{\ATClassGet{myclass}{myattr}} has the same functionality of \PDInline{\ATAttributeGet[myclass]{myattr}}. (See \MacroRef{ATAttributeGet}.)
+\end{Macrodef}
+
+\begin{PDExample}
+    \ATClassSet{person}{
+        forname = Susan,
+        surname = Smith,
+        age = 33,
+    }
+    \ATClassGet{person}{forname} \ATClassGet{person}{surname} is \ATClassGet{person}{age} years old.
+\end{PDExample}
+
+
+\section{Other tools}
 
 \subsection{Lists}
 
@@ -97,28 +154,64 @@ This is the only available package option.
     Add items to list
 \end{Macrodef}
 
-\begin{PDExample}
-    \ATListCreate{people}
-    \ATListAppendItems{people}{Jane, Sean, Sophie}
-    \ATListAppendItems{people}{Margareth, Jack}
-    \begin{itemize}
-        \ATListIterate{people}{\name}{\item \name}
-    \end{itemize}
-\end{PDExample}
+% \begin{PDExample}
+%     \ATListCreate{people}
+%     \ATListAppendItems{people}{Jane, Sean, Sophie}
+%     \ATListAppendItems{people}{Margareth, Jack}
+%     \begin{itemize}
+%         \ATListForEach{people}{\name}{\item \name}
+%     \end{itemize}
+% \end{PDExample}
 
 \begin{Macrodef}{ATListAppendItemsFrom}{\MArg{name}\MArg{macro}}{}
     Get items from macro and add them to list
+\end{Macrodef}
+
+\begin{Macrodef}{ATListForEach}{\MArg{list-name}\MArg{macro}\MArg{commands}}{}
+    foreach \Argument{macro} in \Argument{list-name} do \Argument{commands}
+
+    When specified, the \Argument{separators} must be a four-token argument with \PArg{\Argument{sep-between-two}}, \PArg{\Argument{sep-between-more-than-two}}, \PArg{\Argument{sep-between-final-two}}, and \PArg{\Argument{after-last}}. If the list has two items then \Argument{sep-between-two} is placed between them; if more than two items are present, then \Argument{sep-between-more-than-two} is placed between each item except the last, where \Argument{sep-between-final-two} is used. Finally, \Argument{after-last} (which is not a separator \textit{per se}) is placed after the last item. All separators are empty by default.
+
+    There is a counter for each loop which can be accessed by \MacroDef{ATCounter}.
 \end{Macrodef}
 
 \begin{PDExample}
     \ATListCreate{cities}
     \ATListAppendItems{cities}{Sao Carlos}
     \def\MyCities{Paris, London, Rio de Janeiro}
-    \ATListAppendItemsFrom{cities}{\MyCities}
-    List: \ATListIterate{cities}{\city}{\fbox{\city\strut}}
+    % \ATListAppendItemsFrom{cities}{\MyCities}
+    % \begin{itemize}
+    %     \ATListForEach{cities}{\city}{\item \city}
+    % \end{itemize}
 \end{PDExample}
 
+\begin{PDExample}
+    \ATListCreate{cities}
+    \ATListAppendItems{cities}{Sao Carlos}
+    My cities: \ATListForEach{cities}{\city}[{ and }{, }{, and }{!}]{\textit{\city}}
+
+    \ATListAppendItems{cities}{Paris}
+    My cities: \ATListForEach{cities}{\city}[{ and }{, }{, and }{!}]{\textit{\city}}
+
+    \ATListAppendItems{cities}{London, Rio de Janeiro}
+    My cities: \ATListForEach{cities}{\city}[{ and }{, }{, and }{!}]{\textit{\city}}
+\end{PDExample}
+
+\begin{Macrodef}{ATForEach}{\MArg{macro}\MArg{csv-list}\OArg{separators}\MArg{commands}}{}
+    for \Argument{macro} in \Argument{csv-list} do \Argument{commands}
+
+    The list is created on the fly then discarded.
+\end{Macrodef}
+
+
+
+\begin{PDExample}
+    My list: \ATForEach{\fruit}{apple, orange, lemon, peach}[{ and }{, }{, and }{.}]{\fruit}
+
+    My list: \ATForEach{\fruit}{apple, orange, lemon, peach}[{ and }{, }{, and }{.}]{(\ATCounter)~\fruit}
+\end{PDExample}
 
 \printindex
+
 
 \end{document}

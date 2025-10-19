@@ -10,32 +10,35 @@
 \ExplSyntaxOn
 
 %
-% Package options
+% Options
 \bool_new:N \g_at_readonly_bool
 \keys_define:nn { attrtoolbox }{
     readonly .bool_set:N = \g_at_readonly_bool,
 }
-\keys_set:nn { attrtoolbox }{
+
+\NewDocumentCommand{\ATSet}{ > { \TrimSpaces } m }{
+    \keys_set:nn { attrtoolbox }{ #1 }
+}
+
+% Defaults
+\ATSet{
     readonly = false,
 }
 \ProcessKeyOptions
 
-%
-%
 
-
-% ATAttributeSetValue: sets a named attribute to a class
+% ATAttributeSet: sets a named attribute to a class
 % #1: class name
 % #2: attribute name
 % #3: value
-\msg_new:nnn { attrtoolbox } { is_readonly } { }
+\msg_new:nnn { attrtoolbox } { error } { }
 \cs_new:Npn \at_set_attribute:nnn #1#2#3 {
     \bool_if:NTF \g_at_readonly_bool {
         \bool_if_exist:cTF { g_at_ #1 _ #2 _tl } {
-            \msg_set:nnn { attrtoolbox } { is_readonly } {
+            \msg_set:nnn { attrtoolbox } { error } {
                 Attributes~are~set~to~readonly~(class~#1;~attribute~#2)
             }
-            \msg_error:nn { attrtoolbox } { is_readonly }
+            \msg_error:nn { attrtoolbox } { error }
         }{
             \tl_new:c { g_at_ #1 _ #2 _tl }
             \tl_set:cn { g_at_ #1 _ #2 _tl } { #3 }
@@ -43,24 +46,103 @@
     }{
         \tl_clear_new:c { g_at_ #1 _ #2 _tl }
         \tl_set:cn { g_at_ #1 _ #2 _tl } { #3 }
+    % \tl_show:c { g_at_ #1 _ #2 _tl }
     }
 }
-\NewDocumentCommand{\ATAttributeSetValue}{ m m > { \TrimSpaces } m }{
+\NewDocumentCommand{\ATAttributeSet}{ O{--at-internal-class--} m > { \TrimSpaces } m }{
     \at_set_attribute:nnn { #1 } { #2 } { #3 }
 }
-
-% ATAttributeGetValue: expands an attribute
-% #1: class name
-% #2: attribute name
-\NewDocumentCommand{\ATAttributeGetValue}{ m m }{
-    \tl_use:c { g_at_ #1 _ #2 _tl }
+\NewDocumentCommand{\ATAttributeSetFrom}{ O{--at-internal-class--} m > { \TrimSpaces } m }{
+    \exp_args:NnnV \at_set_attribute:nnn { #1 } { #2 } { #3 }
 }
 
-% ATAttributeGetValue: expands an attribute
+% ATAttributeGet: expands an attribute
+% #1: class name
+% #2: attribute name
+\msg_new:nnn { atttoolbox } { non-existent-attribute } {}
+\cs_new:Npn \at_attribute_get_value:nn #1#2 {
+    \tl_if_exist:cTF { g_at_ #1 _ #2 _tl } {
+        \tl_use:c { g_at_ #1 _ #2 _tl }
+    } {
+        \tl_if_eq:nnTF { #1 } { --at-internal-class-- } {
+            \textbf{#2??}
+            \msg_set:nnn { atttoolbox } { non-existent-attribute } {
+                Attribute~'#2'~unknown.
+            }
+        } {
+            \textbf{#1/#2??}
+            \msg_set:nnn { atttoolbox } { non-existent-attribute } {
+                Attribute~'#1/#2'~unknown.
+            }
+        }
+        \msg_error:nn { atttoolbox } { non-existent-attribute }
+    }
+}
+\NewDocumentCommand{\ATAttributeGet}{ o m }{
+    \IfValueTF{#1}{
+        \at_attribute_get_value:nn { #1 } { #2 }
+    }{
+        \at_attribute_get_value:nn { --at-internal-class-- } { #2 }
+    }
+}
+
+% todo: document!
+\NewDocumentCommand{\ATAttributeGetTo}{ O{--at-internal-class--} m m }{
+    \tl_clear_new:N \l_ppc_local_list_tl
+    \exp_args:NNc \tl_set:Nn \l_ppc_local_list_tl { g_at_ #1 _ #3 _tl }
+    \tl_clear_new:N #2
+    \exp_args:NNo \tl_set:NV #2 \l_ppc_local_list_tl
+}
+
+
+% ATClassSet: attributes for a class
 % #1: class name
 % #2: list of attribute/value pairs
-\NewDocumentCommand{\ATAttributeSetValues}{ m > { \TrimSpaces } m }{
-% todo: processamento de lista de atributos
+\keys_define:nn { attrtoolbox / attribute }{
+    unknown .code:n = {
+        \at_set_attribute:nnn { \l_at_current_class_tl } { \l_keys_key_str } { #1 }
+    },
+    unknown .default:V = \c_novalue_tl,
+}
+\NewDocumentCommand{\ATClassSet}{ m > { \TrimSpaces } m }{
+    \tl_clear_new:N \l_at_current_class_tl
+    \tl_set:Nn \l_at_current_class_tl { #1 }
+    \keys_set:nn { attrtoolbox / attribute } { #2 }
+}
+\NewDocumentCommand{\ATClassSetFrom}{ m > { \TrimSpaces } m }{
+    \tl_clear_new:N \l_at_current_class_tl
+    \tl_set:Nn \l_at_current_class_tl { #1 }
+    \exp_args:Nno \keys_set:nn { attrtoolbox / attribute } { #2 }
+}
+
+% ATAttributeIfExist: execute code depending on existence of an attribute
+% #1: class name (opt)
+% #2: attribute name
+% #3: code to execute if true
+% #4: code to execute if false
+\NewDocumentCommand{\ATAttributeIfExist}{ O{--at-internal-class--} m +m +m }{
+    \tl_if_exist:cTF { g_at_ #1 _ #2 _tl } { #3 } { #4 }
+}
+
+% ATAttributeIfEqual: execute code depending on the value of the attribute
+% #1: class name (opt)
+% #2: attribute name
+% #3: value to compare to
+% #4: code to execute if true
+% #5: code to execute if false
+\NewDocumentCommand{\ATAttributeIfEqual}{ O{--at-internal-class--} m m +m +m }{
+    \tl_if_exist:cTF { g_at_ #1 _ #2 _tl } {
+        \tl_if_eq:cnTF { g_at_ #1 _ #2 _tl } { #3 } { #4 } { #5 }
+    }{
+        \at_attribute_get_value:nn { #1 } { #2 }
+    }
+}
+
+% ATClassGet: expands an attribute
+% #1: class name
+% #2: attribute name
+\NewDocumentCommand{\ATClassGet}{ m m }{
+    \at_attribute_get_value:nn { #1 } { #2 }
 }
 
 % ATListCreate: creates a list
@@ -73,10 +155,12 @@
 % #1: list name
 % #2: comma-separated list of items
 \cs_new:Npn \at_list_append_items:nn #1#2 {
-    \seq_clear_new:N \l_at_list_of_items_seq
-    \seq_set_split:Nnn \l_at_list_of_items_seq { , } { #2 }
-    \seq_map_inline:Nn \l_at_list_of_items_seq {
-        \seq_put_right:cn { g_at_list_ #1 _seq } { ##1 }
+    \str_if_empty:nTF { #2 } { } {
+        \seq_clear_new:N \l_at_list_of_items_seq
+        \seq_set_split:Nnn \l_at_list_of_items_seq { , } { #2 }
+        \seq_map_inline:Nn \l_at_list_of_items_seq {
+            \seq_put_right:cn { g_at_list_ #1 _seq } { ##1 }
+        }
     }
 }
 \NewDocumentCommand{\ATListAppendItems}{ m > { \TrimSpaces } m }{
@@ -88,18 +172,93 @@
     \exp_args:Nno \at_list_append_items:nn { #1 } { #2 }
 }
 
-% ATListIterate: loop through the items of a list
+% ATListForEach: loop through the items of a list
 % #1: list name
 % #2: macro to hold the item at each loop
-% #3: commands to execute for each item
-\cs_new:Npn \at_list_iterate:nnn #1#2#3 {
+% #3: tokens to separate items (optional)
+% #4: commands to execute for each item
+\cs_generate_variant:Nn \seq_map_indexed_inline:Nn { cn }
+\cs_new:Npn \at_list_iterate:nnnn #1#2#3#4 {
     \group_begin:
-    \seq_map_variable:cNn { g_at_list_ #1 _seq } #2 { #3 }
+    \at_split_separators:n { #3 }
+    \tl_clear_new:N \l_at_current_separator_tl
+    \int_compare:nNnTF { \seq_count:c { g_at_list_ #1 _seq } } { = } { 1 } {
+        \tl_set:Nn \l_at_current_separator_tl { }
+    } {
+        \int_compare:nNnTF { \seq_count:c { g_at_list_ #1 _seq } } { = } { 2 } {
+            \tl_set:NV \l_at_separator_between_last_two_tl \l_at_separator_between_two_tl
+        } {
+            \tl_set:NV \l_at_current_separator_tl \l_at_separator_between_more_than_two_tl
+        }
+    }
+    \seq_map_indexed_inline:cn { g_at_list_ #1 _seq } {
+        \tl_set:Nn \ATCounter { ##1 }
+        \tl_set:Nn #2 { ##2 }
+        \int_compare:nNnTF { ##1 } { = } { \seq_count:c { g_at_list_ #1 _seq } - 1} {
+            \tl_set:NV \l_at_current_separator_tl \l_at_separator_between_last_two_tl
+        }{
+            \int_compare:nNnTF { ##1 } { = } { \seq_count:c { g_at_list_ #1 _seq } } {
+                \tl_set:Nn \l_at_current_separator_tl { }
+            } { }
+        }
+        #4
+        \tl_use:N \l_at_current_separator_tl
+    }
+    \tl_use:N \l_at_separator_after_last_tl
     \group_end:
 }
-\NewDocumentCommand{\ATListIterate}{ m m +m }{
-    \at_list_iterate:nnn { #1 } { #2 } { #3 }
+\NewDocumentCommand{\ATListForEach}{ m m O{{}{}{}{}} +m }{
+    \at_list_iterate:nnnn { #1 } { #2 } { #3 } { #4 }
 }
 
+% \at_split_separators: generates three separate tokens to separate items
+% Sets: \l_at_separator_between_two_tl,
+%       \l_at_separator_between_more_than_two_tl, and
+%       \l_at_separator_between_last_two_tl
+\cs_new:Npn \at_split_separators:n #1 {
+    \seq_clear_new:N \l_at_separators_seq
+    \seq_set_split:Nnn \l_at_separators_seq {} { #1 }
+    \int_compare:nNnTF { \seq_count:N \l_at_separators_seq } { = } { 4 } {
+        \tl_clear_new:N \l_at_separator_between_two_tl
+        \tl_set:Nn \l_at_separator_between_two_tl {
+            \seq_item:Nn  \l_at_separators_seq { 1 }
+        }
+        \tl_clear_new:N \l_at_separator_between_more_than_two_tl
+        \tl_set:Nn \l_at_separator_between_more_than_two_tl {
+            \seq_item:Nn  \l_at_separators_seq { 2 }
+        }
+        \tl_clear_new:N \l_at_separator_between_last_two_tl
+        \tl_set:Nn \l_at_separator_between_last_two_tl {
+            \seq_item:Nn  \l_at_separators_seq { 3 }
+        }
+        \tl_clear_new:N \l_at_separator_after_last_tl
+        \tl_set:Nn \l_at_separator_after_last_tl {
+            \seq_item:Nn  \l_at_separators_seq { 4 }
+        }
+    } {
+        \msg_set:nnn { attrtoolbox } { error } {
+            Separators~must~be~four~tokens~(e.g.,~\{~and~\}\{,~\}\{,~and~\}\{.\})
+        }
+        \msg_error:nn { attrtoolbox } { error }
+    }
+}
+
+% todo: Check if it's possible run commands globally (outside a group)
+% ATForEach: loop through the items of comma-separated list
+% #1: (star) do not start a group
+% #2: macro to hold the item at each loop
+% #3: comma-separated list of items
+% #4: tokens to separate items
+% #5: commands to execute for each item
+\NewDocumentCommand{\ATForEach}{ s m > { \TrimSpaces } m O{{}{}{}{}} +m  }{
+    \seq_clear_new:N \g_at_list_for_each_temp_seq
+    \seq_set_split:Nnn \g_at_list_for_each_temp_seq { , } { #3 }
+    \at_list_iterate:nnnn { for_each_temp } { #2 } { #4 } { #5 }
+}
+\NewDocumentCommand{\ATForEachFrom}{ s m > { \TrimSpaces } m O{{}{}{}{}} +m  }{
+    \seq_clear_new:N \g_at_list_for_each_temp_seq
+    \exp_args:NNnV \seq_set_split:Nnn \g_at_list_for_each_temp_seq { , } { #3 }
+    \at_list_iterate:nnnn { for_each_temp } { #2 } { #4 } { #5 }
+}
 
 \ExplSyntaxOff
