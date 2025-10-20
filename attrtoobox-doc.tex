@@ -82,6 +82,21 @@ This is the only available package option.
     Hi, \ATAttributeGet{name}!
 \end{PDExample}
 
+\begin{PDExample}
+    \ATAttributeSet{equation}{$E = mc^2$}
+    \ATAttributeGetTo{\content}{equation}
+    \edef\formula{\ATAttributeGet{equation}}
+    The content: \meaning\content\par
+    The formula: \meaning\formula\par
+    The formula expanded: \expandafter\meaning\formula
+\end{PDExample}
+
+\begin{Macrodef}{ATAttributeGetTo}{\OArg{class}\MArg{macro}\MArg{attribute}}{}
+    This copies the content of \Argument{attribute} in class \Argument{class} to \Argument{macro}.
+\end{Macrodef}
+
+
+
 Attributes can be used with classes. When \MacroRef{ATAttributeGet} is used specifying a class name, it is equivalent to \MacroRef{ATClassGet}. All the same, a class attribute can be set with \MacroRef{ATAttributeGet}.
 
 \begin{PDExample}
@@ -122,6 +137,12 @@ A class is a collection of attributes and their values.
 
 \begin{Macrodef}{ATClassSet}{\MArg{class}\MArg{list-of-attributes}}{}
     This macro is a shorthand to set several attributes in a \Argument{class}. The \Argument{list-of-attributes} is an \mbox{\texttt{attribute~=~value}} comma-separated list.
+
+    This command replaces a sequecence of \MacroRef{ATAttributeSet} calls for a single \Argument{class}.
+\end{Macrodef}
+
+\begin{Macrodef}{ATClassSetFrom}{\MArg{class}\MArg{macro}}{}
+    This macro is a shorthand to set several attributes in a \Argument{class}. The \Argument{macro} is expected to hold a comma-separated list.
 
     This command replaces a sequecence of \MacroRef{ATAttributeSet} calls for a single \Argument{class}.
 \end{Macrodef}
@@ -179,10 +200,10 @@ A class is a collection of attributes and their values.
     \ATListCreate{cities}
     \ATListAppendItems{cities}{Sao Carlos}
     \def\MyCities{Paris, London, Rio de Janeiro}
-    % \ATListAppendItemsFrom{cities}{\MyCities}
-    % \begin{itemize}
-    %     \ATListForEach{cities}{\city}{\item \city}
-    % \end{itemize}
+    \ATListAppendItemsFrom{cities}{\MyCities}
+    \begin{itemize}
+        \ATListForEach{cities}{\city}{\item \city}
+    \end{itemize}
 \end{PDExample}
 
 \begin{PDExample}
@@ -199,6 +220,12 @@ A class is a collection of attributes and their values.
 
 \begin{Macrodef}{ATForEach}{\MArg{macro}\MArg{csv-list}\OArg{separators}\MArg{commands}}{}
     for \Argument{macro} in \Argument{csv-list} do \Argument{commands}
+
+    The list is created on the fly then discarded.
+\end{Macrodef}
+
+\begin{Macrodef}{ATForEachFrom}{\MArg{macro}\MArg{macro-with-list}\OArg{separators}\MArg{commands}}{}
+    for \Argument{macro} in content of \Argument{macro-with-list} do \Argument{commands}.
 
     The list is created on the fly then discarded.
 \end{Macrodef}

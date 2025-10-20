@@ -14,15 +14,11 @@
 \bool_new:N \g_at_readonly_bool
 \keys_define:nn { attrtoolbox }{
     readonly .bool_set:N = \g_at_readonly_bool,
+    readonly .default:n = false,
 }
 
 \NewDocumentCommand{\ATSet}{ > { \TrimSpaces } m }{
     \keys_set:nn { attrtoolbox }{ #1 }
-}
-
-% Defaults
-\ATSet{
-    readonly = false,
 }
 \ProcessKeyOptions
 
@@ -86,33 +82,15 @@
     }
 }
 
-% todo: document!
+% ATAttributeGetTo: copy the content of an attribute to a macro
+% #1: (optional) class name
+% #2: macro to copy content to
+% #3: attribute name
 \NewDocumentCommand{\ATAttributeGetTo}{ O{--at-internal-class--} m m }{
     \tl_clear_new:N \l_ppc_local_list_tl
     \exp_args:NNc \tl_set:Nn \l_ppc_local_list_tl { g_at_ #1 _ #3 _tl }
     \tl_clear_new:N #2
     \exp_args:NNo \tl_set:NV #2 \l_ppc_local_list_tl
-}
-
-
-% ATClassSet: attributes for a class
-% #1: class name
-% #2: list of attribute/value pairs
-\keys_define:nn { attrtoolbox / attribute }{
-    unknown .code:n = {
-        \at_set_attribute:nnn { \l_at_current_class_tl } { \l_keys_key_str } { #1 }
-    },
-    unknown .default:V = \c_novalue_tl,
-}
-\NewDocumentCommand{\ATClassSet}{ m > { \TrimSpaces } m }{
-    \tl_clear_new:N \l_at_current_class_tl
-    \tl_set:Nn \l_at_current_class_tl { #1 }
-    \keys_set:nn { attrtoolbox / attribute } { #2 }
-}
-\NewDocumentCommand{\ATClassSetFrom}{ m > { \TrimSpaces } m }{
-    \tl_clear_new:N \l_at_current_class_tl
-    \tl_set:Nn \l_at_current_class_tl { #1 }
-    \exp_args:Nno \keys_set:nn { attrtoolbox / attribute } { #2 }
 }
 
 % ATAttributeIfExist: execute code depending on existence of an attribute
@@ -137,6 +115,28 @@
         \at_attribute_get_value:nn { #1 } { #2 }
     }
 }
+
+
+% ATClassSet: attributes for a class
+% #1: class name
+% #2: list of attribute/value pairs
+\keys_define:nn { attrtoolbox / attribute }{
+    unknown .code:n = {
+        \at_set_attribute:nnn { \l_at_current_class_tl } { \l_keys_key_str } { #1 }
+    },
+    unknown .default:V = \c_novalue_tl,
+}
+\NewDocumentCommand{\ATClassSet}{ m > { \TrimSpaces } m }{
+    \tl_clear_new:N \l_at_current_class_tl
+    \tl_set:Nn \l_at_current_class_tl { #1 }
+    \keys_set:nn { attrtoolbox / attribute } { #2 }
+}
+\NewDocumentCommand{\ATClassSetFrom}{ m > { \TrimSpaces } m }{
+    \tl_clear_new:N \l_at_current_class_tl
+    \tl_set:Nn \l_at_current_class_tl { #1 }
+    \exp_args:Nno \keys_set:nn { attrtoolbox / attribute } { #2 }
+}
+
 
 % ATClassGet: expands an attribute
 % #1: class name
