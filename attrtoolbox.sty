@@ -263,13 +263,108 @@
 
 % ATListSort: sorts the items in a list
 % #1: list name
-\cs_new:Npn \at_sort_list:n #1 {
+\cs_new_protected:Npn \at_normalize:N #1 {
+    \tl_clear_new:N \l_text_tl
+    \tl_set:Ne \l_text_tl { \exp_args:Ne \text_lowercase:n #1 }
 
+    \tl_replace_all:Nnn \l_text_tl { Á } { a }
+    \tl_replace_all:Nnn \l_text_tl { À } { a }
+    \tl_replace_all:Nnn \l_text_tl { Â } { a }
+    \tl_replace_all:Nnn \l_text_tl { Ã } { a }
+    \tl_replace_all:Nnn \l_text_tl { Ä } { a }
+    \tl_replace_all:Nnn \l_text_tl { É } { e }
+    \tl_replace_all:Nnn \l_text_tl { È } { e }
+    \tl_replace_all:Nnn \l_text_tl { Ê } { e }
+    \tl_replace_all:Nnn \l_text_tl { Ë } { e }
+    \tl_replace_all:Nnn \l_text_tl { Í } { i }
+    \tl_replace_all:Nnn \l_text_tl { Ì } { i }
+    \tl_replace_all:Nnn \l_text_tl { Î } { i }
+    \tl_replace_all:Nnn \l_text_tl { Ï } { i }
+    \tl_replace_all:Nnn \l_text_tl { Ó } { o }
+    \tl_replace_all:Nnn \l_text_tl { Ò } { o }
+    \tl_replace_all:Nnn \l_text_tl { Ô } { o }
+    \tl_replace_all:Nnn \l_text_tl { Õ } { o }
+    \tl_replace_all:Nnn \l_text_tl { Ö } { o }
+    \tl_replace_all:Nnn \l_text_tl { Ú } { u }
+    \tl_replace_all:Nnn \l_text_tl { Ù } { u }
+    \tl_replace_all:Nnn \l_text_tl { Û } { u }
+    \tl_replace_all:Nnn \l_text_tl { Ü } { u }
+    \tl_replace_all:Nnn \l_text_tl { Ç } { c }
+    \tl_replace_all:Nnn \l_text_tl { Ñ } { n }
+    \tl_replace_all:Nnn \l_text_tl { á } { a }
+    \tl_replace_all:Nnn \l_text_tl { à } { a }
+    \tl_replace_all:Nnn \l_text_tl { â } { a }
+    \tl_replace_all:Nnn \l_text_tl { ã } { a }
+    \tl_replace_all:Nnn \l_text_tl { ä } { a }
+    \tl_replace_all:Nnn \l_text_tl { é } { e }
+    \tl_replace_all:Nnn \l_text_tl { è } { e }
+    \tl_replace_all:Nnn \l_text_tl { ê } { e }
+    \tl_replace_all:Nnn \l_text_tl { ë } { e }
+    \tl_replace_all:Nnn \l_text_tl { í } { i }
+    \tl_replace_all:Nnn \l_text_tl { ì } { i }
+    \tl_replace_all:Nnn \l_text_tl { î } { i }
+    \tl_replace_all:Nnn \l_text_tl { ï } { i }
+    \tl_replace_all:Nnn \l_text_tl { ó } { o }
+    \tl_replace_all:Nnn \l_text_tl { ò } { o }
+    \tl_replace_all:Nnn \l_text_tl { ô } { o }
+    \tl_replace_all:Nnn \l_text_tl { õ } { o }
+    \tl_replace_all:Nnn \l_text_tl { ö } { o }
+    \tl_replace_all:Nnn \l_text_tl { ú } { u }
+    \tl_replace_all:Nnn \l_text_tl { ù } { u }
+    \tl_replace_all:Nnn \l_text_tl { û } { u }
+    \tl_replace_all:Nnn \l_text_tl { ü } { u }
+    \tl_replace_all:Nnn \l_text_tl { ç } { c }
+    \tl_replace_all:Nnn \l_text_tl { ñ } { n }
+    \tl_replace_all:Nnn \l_text_tl { œ } { o e}
+    \tl_replace_all:Nnn \l_text_tl { æ } { a e}
+    \tl_replace_all:Nnn \l_text_tl { . } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { , } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ; } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { : } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ! } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ? } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { " } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ' } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ( } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ) } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { [ } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ] } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { - } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { — } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { – } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { … } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ` } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ´ } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { ^ } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { / } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { \~ } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { \% } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { \# } { ~ }
+    \tl_replace_all:Nnn \l_text_tl { \& } { ~ }
+
+    \regex_replace_all:nnN { \s+ } { - } \l_text_tl
+    \tl_replace_all:Nnn \l_text_tl { - } { ~ }
+
+    \tl_trim_spaces:N \l_text_tl
+    \tl_set:NV #1 \l_text_tl
+}
+\cs_generate_variant:Nn \str_compare:nNnTF { VNVTF }
+\cs_new:Npn \at_sort_list:n #1 {
+    \seq_sort:cn { g_at_list_ #1 _seq } {
+        \tl_set:Nn \l_tmpa_tl { ##1 }
+        \at_normalize:N \l_tmpa_tl
+        \tl_set:Nn \l_tmpb_tl { ##2 }
+        \at_normalize:N \l_tmpb_tl
+        \PackageWarning{xxx}{\l_tmpa_tl XXX \l_tmpb_tl}
+        \str_compare:VNVTF \l_tmpa_tl > \l_tmpb_tl {
+            \sort_return_swapped:
+        } {
+            \sort_return_same:
+        }
     }
+}
 \NewDocumentCommand{\ATListSort}{ m }{
     \at_sort_list:n { #1 }
 }
-
-
 
 \ExplSyntaxOff

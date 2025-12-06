@@ -78,7 +78,7 @@ This is the only available package option.
     \ATAttributeSet{name}{Ann}
     Hi, \ATAttributeGet{name}!
 
-    \ATAttributeSet{name}{Jhon}  % new content
+    \ATAttributeSet{name}{John}  % new content
     Hi, \ATAttributeGet{name}!
 \end{PDExample}
 
@@ -118,7 +118,7 @@ Attributes can be used with classes. When \MacroRef{ATAttributeGet} is used spec
 
 \begin{PDExample}
     \ATClassSet{someone}{
-        forname = Jhon,
+        forname = John,
         surname = Doe,
     }
     Name: \ATClassGet{someone}{forname}\ATAttributeIfExist [someone]{middlename}{~\ATClassGet{someone}{middlename}}{} \ATClassGet{someone}{surname}.
@@ -230,15 +230,24 @@ A class is a collection of attributes and their values.
     The list is created on the fly then discarded.
 \end{Macrodef}
 
-
-
 \begin{PDExample}
     My list: \ATForEach{\fruit}{apple, orange, lemon, peach}[{ and }{, }{, and }{.}]{\fruit}
 
     My list: \ATForEach{\fruit}{apple, orange, lemon, peach}[{ and }{, }{, and }{.}]{(\ATCounter)~\fruit}
 \end{PDExample}
 
-\printindex
+\begin{Macrodef}{ATListSort}{\MArg{list-name}}{}
+    Sorts alphabetically the contents of the list.
+\end{Macrodef}
 
+\begin{PDExample}
+    \ATListCreate{a dolgaim}
+    \ATListAppendItems{a dolgaim}{ágy, tükör, könyv, szék, asztal, ernyő, ajtó, hűtő, bőrönd, gyűrű}
+    \ATListSort{a dolgaim}
+    List of my things in Hungarian: \ATListForEach{a dolgaim}{\thing}[{ és }{, }{, és }{.}]{\thing}
+\end{PDExample}
+
+
+\printindex
 
 \end{document}
