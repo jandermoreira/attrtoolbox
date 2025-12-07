@@ -179,7 +179,7 @@
 % #4: commands to execute for each item
 \cs_generate_variant:Nn \seq_map_indexed_inline:Nn { cn }
 \cs_new:Npn \at_list_iterate:nnnn #1#2#3#4 {
-    \group_begin:
+    % \group_begin:
     \at_split_separators:n { #3 }
     \tl_clear_new:N \l_at_current_separator_tl
     \int_compare:nNnTF { \seq_count:c { g_at_list_ #1 _seq } } { = } { 1 } {
@@ -205,7 +205,7 @@
         \tl_use:N \l_at_current_separator_tl
     }
     \tl_use:N \l_at_separator_after_last_tl
-    \group_end:
+    % \group_end:
 }
 \NewDocumentCommand{\ATListForEach}{ m m O{{}{}{}{}} +m }{
     \at_list_iterate:nnnn { #1 } { #2 } { #3 } { #4 }
@@ -261,8 +261,9 @@
     \at_list_iterate:nnnn { for_each_temp } { #2 } { #4 } { #5 }
 }
 
-% ATListSort: sorts the items in a list
-% #1: list name
+
+% ATNormalizeText: normalize text to a canonical form
+% #1: macro with text
 \cs_new_protected:Npn \at_normalize:N #1 {
     \tl_clear_new:N \l_text_tl
     \tl_set:Ne \l_text_tl { \exp_args:Ne \text_lowercase:n #1 }
@@ -348,14 +349,22 @@
     \tl_trim_spaces:N \l_text_tl
     \tl_set:NV #1 \l_text_tl
 }
+\NewDocumentCommand{\ATNormalizeText}{ m }{
+    \at_normalize:N #1
+}
+
+
+% todo: test \MakeLowercase (xparse)
+
+% ATListSort: sorts the items in a list
+% #1: list name
 \cs_generate_variant:Nn \str_compare:nNnTF { VNVTF }
 \cs_new:Npn \at_sort_list:n #1 {
     \seq_sort:cn { g_at_list_ #1 _seq } {
         \tl_set:Nn \l_tmpa_tl { ##1 }
-        \at_normalize:N \l_tmpa_tl
+        % \at_normalize:N \l_tmpa_tl
         \tl_set:Nn \l_tmpb_tl { ##2 }
-        \at_normalize:N \l_tmpb_tl
-        \PackageWarning{xxx}{\l_tmpa_tl XXX \l_tmpb_tl}
+        % \at_normalize:N \l_tmpb_tl
         \str_compare:VNVTF \l_tmpa_tl > \l_tmpb_tl {
             \sort_return_swapped:
         } {
